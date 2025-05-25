@@ -1,0 +1,34 @@
+# MapLeads Requirements
+
+# Core dependencies
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+
+# Database (SQLite is built-in to Python, but we'll use SQLAlchemy for ORM)
+sqlalchemy>=2.0.0
+
+# Data processing
+pandas>=2.0.0
+
+# HTTP requests for webhooks
+requests>=2.31.0
+
+# Progress bars and CLI interface
+tqdm>=4.66.0
+click>=8.1.0
+rich>=13.0.0
+
+# Scheduling
+schedule>=1.2.0
+
+# Email notifications (optional)
+yagmail>=0.15.0
+
+# Configuration management
+python-dotenv>=1.0.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Export formats
+openpyxl>=3.1.0  # For Excel export
