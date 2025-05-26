@@ -38,6 +38,56 @@ def setup():
     console.print("\n[yellow]To start monitoring, run:[/yellow] [bold]python mapleads.py run[/bold]\n")
 
 @cli.command()
+@click.argument('new_category', required=False)
+def category(new_category):
+    """Change the monitoring category (e.g., 'restaurant', 'gym', 'plumber')"""
+    config_manager = ConfigManager()
+    
+    if not config_manager.config_exists():
+        console.print("[red]No configuration found. Run 'python mapleads.py setup' first.[/red]")
+        return
+    
+    config = config_manager.load_config()
+    
+    if new_category:
+        # Category provided as argument
+        old_category = config['monitoring']['category']
+        config['monitoring']['category'] = new_category
+        config_manager.save_config(config)
+        console.print(f"[green]✅ Category changed from '{old_category}' to '{new_category}'[/green]")
+    else:
+        # Interactive category selection
+        console.print(f"\n[cyan]Current category: {config['monitoring']['category']}[/cyan]")
+        console.print("\nPopular categories:")
+        
+        popular_categories = [
+            "restaurant", "gym", "plumber", "dentist", "auto repair",
+            "yoga studio", "coffee shop", "electrician", "contractor", 
+            "salon", "bakery", "lawyer", "accountant"
+        ]
+        
+        for i, cat in enumerate(popular_categories, 1):
+            console.print(f"  {i}. {cat}")
+        console.print(f"  {len(popular_categories)+1}. Custom category")
+        
+        from rich.prompt import Prompt
+        choice = Prompt.ask(f"\nSelect option (1-{len(popular_categories)+1}) or enter custom category")
+        
+        try:
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(popular_categories):
+                new_category = popular_categories[choice_idx]
+            else:
+                new_category = Prompt.ask("Enter your custom business category").strip()
+        except ValueError:
+            new_category = choice.strip()
+        
+        old_category = config['monitoring']['category']
+        config['monitoring']['category'] = new_category
+        config_manager.save_config(config)
+        console.print(f"[green]✅ Category changed from '{old_category}' to '{new_category}'[/green]")
+
+@cli.command()
 @click.option('--headless/--no-headless', default=True, help='Run browser in headless mode')
 def run(headless):
     """Start monitoring for new businesses"""

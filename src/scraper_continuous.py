@@ -141,6 +141,15 @@ class MapLeadsScraper:
                             businesses = self._scrape_url(url)
                             new_count = 0
                             
+                            # Check if we got any businesses with phone numbers
+                            businesses_with_phones = [b for b in businesses if b.get('phone')]
+                            if not businesses_with_phones and businesses:
+                                # Found businesses but no phone numbers - likely unsupported category
+                                print(f"  ⚠️  Found {len(businesses)} businesses in {location['city']}, {location['state']} but no phone numbers")
+                                print(f"     This business category may not be fully supported yet.")
+                                print(f"     See RESTAURANT_BAKERY_ENHANCEMENT.md for details.")
+                                continue
+                            
                             # Check each business
                             for business in businesses:
                                 if not business.get('phone'):
