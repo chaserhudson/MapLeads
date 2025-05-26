@@ -15,10 +15,10 @@ class LocationConfig(BaseModel):
     min_population: int = 0
 
 class MonitoringConfig(BaseModel):
-    categories: List[str]
+    category: str  # Single category instead of list
     locations: LocationConfig
-    schedule: str = "daily"
-    max_urls: Optional[int] = 100
+    batch_size: int = 10
+    batch_delay: int = 60  # seconds between batches
 
 class EmailConfig(BaseModel):
     enabled: bool = False
@@ -50,8 +50,8 @@ class MapLeadsConfig(BaseModel):
     
     @validator('monitoring')
     def validate_monitoring(cls, v):
-        if not v.categories:
-            raise ValueError("At least one category must be specified")
+        if not v.category:
+            raise ValueError("A category must be specified")
         return v
 
 
@@ -96,14 +96,14 @@ class ConfigManager:
         """Get default configuration template"""
         return {
             "monitoring": {
-                "categories": ["restaurant", "gym"],
+                "category": "restaurant",
                 "locations": {
                     "states": ["CA", "TX"],
                     "cities": [],
                     "min_population": 50000
                 },
-                "schedule": "daily",
-                "max_urls": 100
+                "batch_size": 10,
+                "batch_delay": 60
             },
             "notifications": {
                 "email": {
@@ -133,18 +133,14 @@ class ConfigManager:
         
         example_config = {
             "monitoring": {
-                "categories": [
-                    "restaurant",
-                    "gym", 
-                    "dentist"
-                ],
+                "category": "restaurant",
                 "locations": {
                     "states": ["CA", "TX", "FL"],
                     "cities": [],
                     "min_population": 50000
                 },
-                "schedule": "daily",
-                "max_urls": 200
+                "batch_size": 20,
+                "batch_delay": 60
             },
             "notifications": {
                 "email": {

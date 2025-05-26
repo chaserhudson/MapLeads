@@ -20,15 +20,17 @@ ENV/
 config/config.json
 data/mapleads.db
 data/locations.db
-data/*.csv
 logs/
 *.log
 
 # Exports
 exports/
 *.xlsx
-*.csv
 *.json
+
+# CSV files (except uszips.csv)
+*.csv
+!data/uszips.csv
 
 # OS
 .DS_Store

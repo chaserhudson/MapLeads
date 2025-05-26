@@ -32,19 +32,16 @@ class InteractiveSetup:
             title="Setup Wizard"
         ))
         
-        # Step 1: Categories
-        self._setup_categories()
+        # Step 1: Category
+        self._setup_category()
         
         # Step 2: Locations
         self._setup_locations()
         
-        # Step 3: Schedule
-        self._setup_schedule()
-        
-        # Step 4: Notifications
+        # Step 3: Notifications
         self._setup_notifications()
         
-        # Step 5: Advanced settings
+        # Step 4: Advanced settings
         self._setup_advanced()
         
         # Show summary
@@ -64,10 +61,10 @@ class InteractiveSetup:
             console.print("[yellow]Configuration not saved. Exiting.[/yellow]")
             exit(0)
     
-    def _setup_categories(self):
-        """Setup business categories to monitor"""
-        console.print("\n[bold cyan]Step 1: Business Categories[/bold cyan]")
-        console.print("What types of businesses do you want to monitor?")
+    def _setup_category(self):
+        """Setup business category to monitor"""
+        console.print("\n[bold cyan]Step 1: Business Category[/bold cyan]")
+        console.print("What type of business do you want to monitor?")
         
         # Show popular categories
         categories = {
@@ -79,25 +76,30 @@ class InteractiveSetup:
             "6": "Custom categories"
         }
         
-        console.print("\nPopular category sets:")
-        for key, value in categories.items():
-            if key != "6":
-                console.print(f"  {key}. {', '.join(value)}")
+        console.print("\nPopular categories:")
+        popular_categories = [
+            "restaurant", "gym", "plumber", "dentist", "auto repair",
+            "yoga studio", "coffee shop", "electrician", "contractor",
+            "salon", "bakery", "lawyer", "accountant"
+        ]
+        
+        for i, cat in enumerate(popular_categories, 1):
+            console.print(f"  {i}. {cat}")
+        console.print(f"  {len(popular_categories)+1}. Custom category")
+        
+        choice = Prompt.ask(f"\nSelect option (1-{len(popular_categories)+1}) or enter custom category", default=str(len(popular_categories)+1))
+        
+        try:
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(popular_categories):
+                category = popular_categories[choice_idx]
             else:
-                console.print(f"  {key}. {value}")
+                category = Prompt.ask("Enter your custom business category (e.g., 'deck builder')").strip()
+        except ValueError:
+            category = choice.strip()
         
-        choice = Prompt.ask("\nSelect option (1-6) or enter custom categories", default="6")
-        
-        if choice in ["1", "2", "3", "4", "5"]:
-            self.config['monitoring']['categories'] = categories[choice]
-        else:
-            # Custom categories
-            custom = Prompt.ask("Enter categories separated by commas")
-            self.config['monitoring']['categories'] = [
-                cat.strip() for cat in custom.split(',') if cat.strip()
-            ]
-        
-        console.print(f"[green]Selected categories: {', '.join(self.config['monitoring']['categories'])}[/green]")
+        self.config['monitoring']['category'] = category
+        console.print(f"[green]Selected category: {category}[/green]")
     
     def _setup_locations(self):
         """Setup geographic locations to monitor"""
@@ -142,22 +144,11 @@ class InteractiveSetup:
         )
         self.config['monitoring']['locations']['min_population'] = min_pop
     
-    def _setup_schedule(self):
-        """Setup monitoring schedule"""
-        console.print("\n[bold cyan]Step 3: Monitoring Schedule[/bold cyan]")
-        
-        schedule = Prompt.ask(
-            "How often should MapLeads check for new businesses?",
-            choices=["hourly", "daily", "weekly"],
-            default="daily"
-        )
-        
-        self.config['monitoring']['schedule'] = schedule
-        console.print(f"[green]Schedule: {schedule} monitoring[/green]")
+    # Schedule setup removed - continuous processing mode enabled
     
     def _setup_notifications(self):
         """Setup notification preferences"""
-        console.print("\n[bold cyan]Step 4: Notifications (Optional)[/bold cyan]")
+        console.print("\n[bold cyan]Step 3: Notifications (Optional)[/bold cyan]")
         
         if Confirm.ask("Do you want to set up notifications?", default=False):
             # Email notifications
@@ -206,14 +197,21 @@ class InteractiveSetup:
     
     def _setup_advanced(self):
         """Setup advanced settings"""
-        console.print("\n[bold cyan]Step 5: Advanced Settings[/bold cyan]")
+        console.print("\n[bold cyan]Step 4: Advanced Settings[/bold cyan]")
         
-        # Max URLs per scan
-        max_urls = IntPrompt.ask(
-            "Maximum locations to check per scan (higher = more thorough but slower)",
-            default=100
+        # Batch size for continuous processing
+        batch_size = IntPrompt.ask(
+            "Number of locations to process in each batch",
+            default=10
         )
-        self.config['monitoring']['max_urls'] = max_urls
+        self.config['monitoring']['batch_size'] = batch_size
+        
+        # Delay between batches
+        delay = IntPrompt.ask(
+            "Delay between batches in seconds (to avoid rate limiting)",
+            default=60
+        )
+        self.config['monitoring']['batch_delay'] = delay
     
     def _show_summary(self):
         """Show configuration summary"""
@@ -224,7 +222,7 @@ class InteractiveSetup:
         table.add_column("Setting", style="cyan")
         table.add_column("Value", style="green")
         
-        table.add_row("Categories", ", ".join(self.config['monitoring']['categories']))
+        table.add_row("Category", self.config['monitoring']['category'])
         
         locations = self.config['monitoring']['locations']
         if locations['states']:
@@ -236,8 +234,9 @@ class InteractiveSetup:
         
         table.add_row("Locations", location_str)
         table.add_row("Min Population", str(locations['min_population']))
-        table.add_row("Schedule", self.config['monitoring']['schedule'])
-        table.add_row("Max URLs", str(self.config['monitoring']['max_urls']))
+        table.add_row("Processing Mode", "Continuous")
+        table.add_row("Batch Size", str(self.config['monitoring'].get('batch_size', 10)))
+        table.add_row("Batch Delay", f"{self.config['monitoring'].get('batch_delay', 60)} seconds")
         
         console.print(table)
         

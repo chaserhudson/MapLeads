@@ -13,7 +13,7 @@ from rich.table import Table
 from rich.progress import track
 
 from src.config_manager import ConfigManager
-from src.scraper import MapLeadsScraper
+from src.scraper_continuous import MapLeadsScraper
 from src.database import Database
 from src.notifier import NotificationManager
 from src.interactive_setup import InteractiveSetup
@@ -39,9 +39,7 @@ def setup():
 
 @cli.command()
 @click.option('--headless/--no-headless', default=True, help='Run browser in headless mode')
-@click.option('--parallel', default=1, help='Number of parallel browsers')
-@click.option('--once', is_flag=True, help='Run once instead of continuous monitoring')
-def run(headless, parallel, once):
+def run(headless):
     """Start monitoring for new businesses"""
     config_manager = ConfigManager()
     
@@ -52,7 +50,7 @@ def run(headless, parallel, once):
     
     config = config_manager.load_config()
     console.print(f"\n[bold green]Starting MapLeads Monitor[/bold green]")
-    console.print(f"Categories: {', '.join(config['monitoring']['categories'])}")
+    console.print(f"Category: {config['monitoring']['category']}")
     console.print(f"Locations: {config['monitoring']['locations']}")
     
     db = Database()
@@ -60,52 +58,15 @@ def run(headless, parallel, once):
     notifier = NotificationManager(config)
     
     try:
-        if once:
-            # Run single scan
-            console.print("\n[yellow]Running single scan...[/yellow]")
-            new_businesses = scraper.scan(config['monitoring'])
-            
-            if new_businesses:
-                console.print(f"\n[green]Found {len(new_businesses)} new businesses![/green]")
-                notifier.send_notifications(new_businesses)
-                _display_new_businesses(new_businesses)
-            else:
-                console.print("\n[yellow]No new businesses found in this scan.[/yellow]")
-        else:
-            # Continuous monitoring
-            console.print("\n[yellow]Starting continuous monitoring...[/yellow]")
-            console.print("[dim]Press Ctrl+C to stop[/dim]\n")
-            
-            import schedule
-            import time
-            
-            def run_scan():
-                console.print(f"\n[blue]Running scan at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[/blue]")
-                new_businesses = scraper.scan(config['monitoring'])
-                
-                if new_businesses:
-                    console.print(f"[green]Found {len(new_businesses)} new businesses![/green]")
-                    notifier.send_notifications(new_businesses)
-                    _display_new_businesses(new_businesses)
-                else:
-                    console.print("[dim]No new businesses found.[/dim]")
-            
-            # Schedule based on config
-            schedule_config = config['monitoring'].get('schedule', 'daily')
-            if schedule_config == 'hourly':
-                schedule.every().hour.do(run_scan)
-            elif schedule_config == 'daily':
-                schedule.every().day.at("09:00").do(run_scan)
-            else:
-                schedule.every().day.do(run_scan)
-            
-            # Run immediately
-            run_scan()
-            
-            # Keep running
-            while True:
-                schedule.run_pending()
-                time.sleep(60)
+        # Continuous monitoring mode
+        console.print("\n[yellow]Starting continuous monitoring...[/yellow]")
+        console.print("[dim]Press Ctrl+C to stop[/dim]\n")
+        
+        # Set up notifier on scraper for real-time notifications
+        scraper.notifier = notifier
+        
+        # Start continuous scanning
+        scraper.continuous_scan(config['monitoring'])
                 
     except KeyboardInterrupt:
         console.print("\n[yellow]Monitoring stopped by user.[/yellow]")
@@ -225,12 +186,12 @@ def test():
     # Create minimal test config
     test_config = {
         'monitoring': {
-            'categories': ['restaurant'],
+            'category': 'restaurant',
             'locations': {
                 'states': ['CA'],
                 'min_population': 100000
             },
-            'max_urls': 5
+            'batch_size': 5
         }
     }
     
