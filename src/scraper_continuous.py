@@ -214,6 +214,155 @@ class MapLeadsScraper:
         finally:
             self.cleanup()
     
+    def baseline_scan(self, monitoring_config: Dict) -> None:
+        """Run a one-time baseline scan to populate database"""
+        if not self.setup_driver():
+            raise Exception("Failed to setup Chrome driver")
+        
+        try:
+            category = monitoring_config['category']
+            locations_config = monitoring_config['locations']
+            
+            # Get all locations
+            all_locations = self.db.get_locations_for_filters(
+                states=locations_config.get('states'),
+                cities=locations_config.get('cities'),
+                min_population=locations_config.get('min_population', 0)
+            )
+            
+            if not all_locations:
+                print("No locations found matching criteria")
+                return
+            
+            total_locations = len(all_locations)
+            
+            # Calculate time estimation
+            estimated_time = self._calculate_baseline_time(total_locations)
+            
+            print(f"🎯 Baseline Scan Configuration:")
+            print(f"   Category: {category}")
+            print(f"   Total locations: {total_locations}")
+            print(f"   Estimated completion time: {estimated_time}")
+            print()
+            print("📊 This baseline scan will:")
+            print("   • Find all existing businesses in your selected category/locations")
+            print("   • Add them to the database for future comparison")
+            print("   • NOT send any notifications (all businesses are 'new' since DB is empty)")
+            print("   • Enable future scans to detect truly NEW businesses")
+            print()
+            
+            # Confirm start
+            try:
+                from rich.prompt import Confirm
+                if not Confirm.ask("Ready to start baseline scan?"):
+                    print("Baseline scan cancelled.")
+                    return
+            except ImportError:
+                input("Press Enter to continue or Ctrl+C to cancel...")
+            
+            baseline_start = datetime.now()
+            category_formatted = category.replace(' ', '+')
+            
+            print(f"\n🚀 Starting baseline scan...")
+            print(f"📍 Processing category: {category}")
+            
+            # Process all locations
+            for idx, location in enumerate(all_locations, 1):
+                url = (
+                    f"https://www.google.com/maps/search/{category_formatted}/@"
+                    f"{location['lat']},{location['lng']},13z"
+                )
+                
+                # Progress indicator
+                progress_pct = (idx / total_locations) * 100
+                print(f"Progress: {progress_pct:.1f}% - Scanning {location['city']}, {location['state']} ({idx}/{total_locations})")
+                
+                try:
+                    businesses = self._scrape_url(url)
+                    found_count = 0
+                    
+                    # Process all businesses (no "new" vs "existing" in baseline mode)
+                    for business in businesses:
+                        if not business.get('phone'):
+                            continue
+                        
+                        # Add location info
+                        business['city'] = location.get('city', 'Unknown')
+                        business['state'] = location.get('state', 'Unknown')
+                        business['zip_code'] = location.get('zip', 'Unknown')
+                        
+                        # In baseline mode, add all businesses regardless of existence
+                        if not self.db.business_exists(business['phone']):
+                            self.db.add_business(business)
+                            found_count += 1
+                        else:
+                            # Update last seen for existing businesses
+                            self.db.update_last_seen(business['phone'])
+                    
+                    if found_count > 0:
+                        print(f"   📋 Added {found_count} businesses from {location['city']}, {location['state']}")
+                    
+                except Exception as e:
+                    print(f"   ❌ Error processing {location['city']}: {e}")
+                
+                # Delay between requests
+                time.sleep(random.uniform(1, 3))
+            
+            # Baseline completed
+            duration = datetime.now() - baseline_start
+            duration_minutes = duration.total_seconds() / 60
+            
+            print(f"\n✅ Baseline scan completed!")
+            print(f"   Duration: {duration_minutes:.1f} minutes")
+            print(f"   Total businesses found: {self.stats['businesses_found']}")
+            print(f"   Locations processed: {total_locations}")
+            print()
+            print("🎯 Your baseline is now established! Future scans will:")
+            print("   • Only report businesses that are NEW since this baseline")
+            print("   • Send notifications for genuinely new businesses")
+            print("   • Track changes in business listings over time")
+            print()
+            print("To start monitoring for new businesses, run:")
+            print("   python mapleads.py run")
+            
+            # Record baseline in scan history
+            self.db.add_scan_record(
+                categories=[category],
+                locations=locations_config,
+                businesses_found=self.stats['businesses_found'],
+                new_businesses=0,  # In baseline mode, all are "baseline" not "new"
+                duration_seconds=int(duration.total_seconds())
+            )
+            
+        except KeyboardInterrupt:
+            print("\n⏹️  Baseline scan stopped by user.")
+        finally:
+            self.cleanup()
+    
+    def _calculate_baseline_time(self, total_locations: int) -> str:
+        """Calculate estimated time for baseline scan"""
+        # Conservative estimates:
+        # - Average 15 seconds per location (including delays)
+        # - Add 20% buffer for unexpected delays
+        
+        avg_seconds_per_location = 15
+        buffer_multiplier = 1.2
+        
+        total_seconds = total_locations * avg_seconds_per_location * buffer_multiplier
+        
+        if total_seconds < 60:
+            return f"{int(total_seconds)} seconds"
+        elif total_seconds < 3600:
+            minutes = int(total_seconds / 60)
+            return f"{minutes} minutes"
+        else:
+            hours = int(total_seconds / 3600)
+            remaining_minutes = int((total_seconds % 3600) / 60)
+            if remaining_minutes > 0:
+                return f"{hours} hours, {remaining_minutes} minutes"
+            else:
+                return f"{hours} hours"
+    
     def _save_progress(self):
         """Save current progress to resume later"""
         progress_data = {

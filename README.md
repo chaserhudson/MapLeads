@@ -26,6 +26,9 @@ pip install -r requirements.txt
 # Run interactive setup
 python mapleads.py setup
 
+# Establish baseline (first-time users)
+python mapleads.py baseline
+
 # Start monitoring
 python mapleads.py run
 ```
@@ -108,7 +111,13 @@ MapLeads excels at identifying newly established businesses by:
    - Setting up notifications
    - Configuring scan frequency
 
-3. **Start Monitoring**:
+3. **Establish Baseline** (First-time users):
+   ```bash
+   python mapleads.py baseline
+   ```
+   This populates your database with existing businesses so future scans can detect truly NEW businesses.
+
+4. **Start Monitoring**:
    ```bash
    python mapleads.py run
    ```
@@ -116,11 +125,29 @@ MapLeads excels at identifying newly established businesses by:
 ## 🎮 Commands
 
 - `python mapleads.py setup` - Interactive configuration wizard
+- `python mapleads.py baseline` - Establish baseline (first-time users)
 - `python mapleads.py run` - Start monitoring with current config
 - `python mapleads.py test` - Run a test scan (10 searches)
 - `python mapleads.py status` - View monitoring statistics
 - `python mapleads.py export` - Export data to CSV/JSON
 - `python mapleads.py categories` - List available business categories
+
+### First-Time Setup
+
+When running MapLeads for the first time, establish a baseline to avoid false positives:
+
+```bash
+# 1. Configure your preferences
+python mapleads.py setup
+
+# 2. Establish baseline (IMPORTANT for first-time users)
+python mapleads.py baseline
+
+# 3. Start monitoring for NEW businesses
+python mapleads.py run
+```
+
+**Why baseline mode?** Without a baseline, every business will appear "new" since your database is empty. The baseline scan populates your database with existing businesses, so future scans can accurately detect genuinely new businesses that appear after your baseline.
 
 ## 📈 Advanced Usage
 
