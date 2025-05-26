@@ -14,7 +14,7 @@ setup(
     description="Open-source B2B lead generation tool for Google Maps",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/MapLeads",
+    url="https://github.com/chaserhudson/MapLeads",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
