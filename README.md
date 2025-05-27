@@ -33,6 +33,30 @@ python mapleads.py baseline
 python mapleads.py run
 ```
 
+## 🖥️ Graphical User Interface
+
+MapLeads now includes a comprehensive GUI for easier management:
+
+```bash
+# Launch the GUI
+python run_gui.py
+```
+
+### GUI Features
+
+- **Configuration Tab**: Visual configuration editor with all CLI options
+- **Database View**: Browse, filter, sort, and export all database records
+- **Operations Tab**: Run all MapLeads operations (setup, baseline, monitoring) with progress tracking
+- **Logs Tab**: Real-time command output and logging
+
+### GUI Benefits
+
+- **Visual Database Management**: View all discovered businesses in a sortable table
+- **Real-time Filtering**: Search and filter businesses by any column
+- **Export Integration**: Direct CSV/JSON export from the interface
+- **Process Management**: Start/stop monitoring with visual feedback
+- **Configuration Management**: Easy setup without command-line knowledge
+
 ## 📖 Use Cases
 
 - **Service Providers**: Find new gyms to sell equipment or services
