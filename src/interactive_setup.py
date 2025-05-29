@@ -212,6 +212,14 @@ class InteractiveSetup:
             default=60
         )
         self.config['monitoring']['batch_delay'] = delay
+        
+        # Number of browser instances
+        browser_instances = IntPrompt.ask(
+            "Number of parallel browser instances (1-5, more = faster but uses more resources)",
+            default=1,
+            choices=["1", "2", "3", "4", "5"]
+        )
+        self.config['monitoring']['browser_instances'] = browser_instances
     
     def _show_summary(self):
         """Show configuration summary"""
@@ -237,6 +245,7 @@ class InteractiveSetup:
         table.add_row("Processing Mode", "Continuous")
         table.add_row("Batch Size", str(self.config['monitoring'].get('batch_size', 10)))
         table.add_row("Batch Delay", f"{self.config['monitoring'].get('batch_delay', 60)} seconds")
+        table.add_row("Browser Instances", str(self.config['monitoring'].get('browser_instances', 1)))
         
         console.print(table)
         

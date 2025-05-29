@@ -19,6 +19,7 @@ class MonitoringConfig(BaseModel):
     locations: LocationConfig
     batch_size: int = 10
     batch_delay: int = 60  # seconds between batches
+    browser_instances: int = 1  # Number of parallel browser instances (1-5)
 
 class EmailConfig(BaseModel):
     enabled: bool = False
@@ -52,6 +53,8 @@ class MapLeadsConfig(BaseModel):
     def validate_monitoring(cls, v):
         if not v.category:
             raise ValueError("A category must be specified")
+        if v.browser_instances < 1 or v.browser_instances > 5:
+            raise ValueError("Browser instances must be between 1 and 5")
         return v
 
 
@@ -103,7 +106,8 @@ class ConfigManager:
                     "min_population": 50000
                 },
                 "batch_size": 10,
-                "batch_delay": 60
+                "batch_delay": 60,
+                "browser_instances": 1
             },
             "notifications": {
                 "email": {
@@ -140,7 +144,8 @@ class ConfigManager:
                     "min_population": 50000
                 },
                 "batch_size": 20,
-                "batch_delay": 60
+                "batch_delay": 60,
+                "browser_instances": 2
             },
             "notifications": {
                 "email": {
