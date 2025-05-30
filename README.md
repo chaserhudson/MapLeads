@@ -1,6 +1,6 @@
 # MapLeads 🗺️
 
-Open-source B2B lead generation tool that monitors Google Maps for new business listings in your target market.
+Automatically find new businesses as they appear on Google Maps. Perfect for contractors, service providers, and B2B sales teams looking for fresh leads in their target markets.
 
 ## 🎯 Key Features
 
@@ -13,6 +13,31 @@ Open-source B2B lead generation tool that monitors Google Maps for new business 
 - **Parallel Processing**: Use multiple browsers for faster data collection
 
 ## 🚀 Quick Start
+
+### For Non-Technical Users (Easiest)
+
+1. **Download MapLeads**:
+   - Click the green "Code" button → "Download ZIP"
+   - Extract the ZIP file to your Desktop
+   - Open Terminal (Mac) or Command Prompt (Windows)
+   - Navigate to the folder: `cd Desktop/MapLeads-main`
+
+2. **One-Click Installation**:
+   ```bash
+   ./install.sh
+   ```
+
+3. **Set Up Your Preferences**:
+   ```bash
+   ./run.sh setup
+   ```
+
+4. **Start Finding Leads**:
+   ```bash
+   ./run.sh
+   ```
+
+### For Technical Users
 
 ```bash
 # Clone the repository
@@ -115,7 +140,18 @@ MapLeads excels at identifying newly established businesses by:
    python mapleads.py run
    ```
 
-## 🎮 Commands
+## 🎮 Easy Commands (Non-Technical)
+
+- `./run.sh setup` - Set up MapLeads for the first time
+- `./run.sh` - Start finding new businesses
+- `./run.sh status` - See what you've found so far
+- `./run.sh export` - Save your leads to a CSV file
+- `./run.sh test` - Quick test to make sure everything works
+- `./run.sh category plumber` - Change what type of business to find
+- `./run.sh instances 3` - Use 3 browsers for faster results
+- `./run.sh categories` - See all available business types
+
+## 🎮 Technical Commands
 
 - `python mapleads.py setup` - Interactive configuration wizard
 - `python mapleads.py run` - Start monitoring with current config
@@ -162,6 +198,52 @@ Each business record includes:
 - First seen date
 - Last updated date
 - Geographic coordinates
+
+## 🆘 Common Issues & Solutions
+
+### Installation Problems
+
+**"Python 3 not found"**
+- **Mac**: Install from [python.org](https://python.org) or use Homebrew: `brew install python3`
+- **Windows**: Download from [python.org](https://python.org) and check "Add to PATH"
+- **Linux**: `sudo apt install python3` (Ubuntu) or `sudo yum install python3` (CentOS)
+
+**"Permission denied"**
+```bash
+chmod +x install.sh
+chmod +x run.sh
+```
+
+**"Virtual environment creation failed"**
+- Make sure you have enough disk space (at least 1GB free)
+- Try: `python3 -m pip install --user virtualenv`
+
+### Running Problems
+
+**"No businesses found"**
+- Try a different category: `./run.sh category electrician`
+- Test with a more common category first: `./run.sh category restaurant`
+- Check your internet connection
+
+**"Chrome driver issues"**
+- Make sure Google Chrome is installed
+- Restart your computer and try again
+- Close all Chrome windows before running MapLeads
+
+**"Too slow"**
+- Use more browser instances: `./run.sh instances 3`
+- Make sure you have at least 4GB RAM for multiple instances
+
+**"Memory issues"**
+- Reduce browser instances: `./run.sh instances 1`
+- Close other programs while running MapLeads
+
+### Getting Help
+
+1. Try running: `./run.sh test` to diagnose issues
+2. Check the error message carefully
+3. Restart your computer and try again
+4. Create an issue on GitHub with the error message
 
 ## 🤝 Contributing
 
