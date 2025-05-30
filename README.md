@@ -36,10 +36,16 @@ python mapleads.py run
 ## 📖 Use Cases
 
 - **Service Providers**: Find new gyms to sell equipment or services
-- **B2B Software**: Identify new restaurants for your POS system
+- **B2B Software**: Identify new service businesses for your software solutions
 - **Contractors**: Discover new businesses that might need renovations
 - **Marketing Agencies**: Track new businesses that need marketing services
 - **Local Services**: Monitor competitors or potential partners in your area
+
+## 📝 Category Notes
+
+**Best Performance**: Home services (plumber, electrician, HVAC, contractor, etc.) work exceptionally well as phone numbers are readily visible in search results.
+
+**Limited Support**: Restaurants, cafes, and food businesses may have incomplete phone number extraction since Google Maps often requires clicking individual business cards to access contact details.
 
 ## 🔧 Configuration
 
@@ -123,15 +129,18 @@ MapLeads excels at identifying newly established businesses by:
 
 ### Custom Categories
 ```python
-# Add custom search terms to config.json
-"categories": ["dog groomer", "pet store", "veterinarian"]
+# Set custom search term in config.json
+"category": "dog groomer"
 ```
 
 ### Parallel Processing
 ```bash
 # Use 3 parallel browsers for faster scanning
-python mapleads.py run --parallel 3
+python mapleads.py instances 3
+python mapleads.py run
 ```
+
+**Performance Impact**: 2-3 instances provide 2-3x faster scanning. Higher instances (4-5) offer greater speed but require more system resources (4GB+ RAM recommended).
 
 
 ### Scheduling
