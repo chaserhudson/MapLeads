@@ -75,8 +75,8 @@ class ConfigManager:
             "monitoring": {
                 "category": "plumber",
                 "locations": {
-                    "states": ["CA", "TX"],
-                    "cities": [],
+                    "states": None,
+                    "cities": None,
                     "min_population": 50000
                 },
                 "batch_size": 10,
