@@ -18,36 +18,10 @@ class MonitoringConfig(BaseModel):
     category: str  # Single category instead of list
     locations: LocationConfig
     batch_size: int = 10
-    batch_delay: int = 60  # seconds between batches
     browser_instances: int = 1  # Number of parallel browser instances (1-5)
-
-class EmailConfig(BaseModel):
-    enabled: bool = False
-    smtp_server: Optional[str] = None
-    smtp_port: Optional[int] = 587
-    email: Optional[str] = None
-    password: Optional[str] = None
-    recipients: List[str] = []
-
-class WebhookConfig(BaseModel):
-    enabled: bool = False
-    url: Optional[str] = None
-    headers: Dict[str, str] = {}
-
-class NotificationFilters(BaseModel):
-    only_with_reviews: bool = False
-    only_without_reviews: bool = False  # Find newer businesses
-    only_with_website: bool = False
-    min_rating: Optional[float] = None
-
-class NotificationConfig(BaseModel):
-    email: Optional[EmailConfig] = EmailConfig()
-    webhook: Optional[WebhookConfig] = WebhookConfig()
-    filters: NotificationFilters = NotificationFilters()
 
 class MapLeadsConfig(BaseModel):
     monitoring: MonitoringConfig
-    notifications: NotificationConfig = NotificationConfig()
     
     @validator('monitoring')
     def validate_monitoring(cls, v):
@@ -99,36 +73,15 @@ class ConfigManager:
         """Get default configuration template"""
         return {
             "monitoring": {
-                "category": "restaurant",
+                "category": "plumber",
                 "locations": {
                     "states": ["CA", "TX"],
                     "cities": [],
                     "min_population": 50000
                 },
                 "batch_size": 10,
-                "batch_delay": 60,
                 "browser_instances": 1
             },
-            "notifications": {
-                "email": {
-                    "enabled": False,
-                    "smtp_server": "smtp.gmail.com",
-                    "smtp_port": 587,
-                    "email": "",
-                    "password": "",
-                    "recipients": []
-                },
-                "webhook": {
-                    "enabled": False,
-                    "url": "",
-                    "headers": {}
-                },
-                "filters": {
-                    "only_with_reviews": False,
-                    "only_with_website": False,
-                    "min_rating": None
-                }
-            }
         }
     
     def create_example_config(self):
@@ -137,38 +90,15 @@ class ConfigManager:
         
         example_config = {
             "monitoring": {
-                "category": "restaurant",
+                "category": "plumber",
                 "locations": {
                     "states": ["CA", "TX", "FL"],
                     "cities": [],
                     "min_population": 50000
                 },
                 "batch_size": 20,
-                "batch_delay": 60,
                 "browser_instances": 2
             },
-            "notifications": {
-                "email": {
-                    "enabled": True,
-                    "smtp_server": "smtp.gmail.com",
-                    "smtp_port": 587,
-                    "email": "your-email@gmail.com",
-                    "password": "your-app-password",
-                    "recipients": ["recipient@example.com"]
-                },
-                "webhook": {
-                    "enabled": True,
-                    "url": "https://hooks.zapier.com/hooks/catch/123456/abcdef/",
-                    "headers": {
-                        "Authorization": "Bearer YOUR_TOKEN"
-                    }
-                },
-                "filters": {
-                    "only_with_reviews": False,
-                    "only_with_website": True,
-                    "min_rating": 4.0
-                }
-            }
         }
         
         with open(example_path, 'w') as f:

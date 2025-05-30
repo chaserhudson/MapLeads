@@ -173,38 +173,6 @@ def run(headless):
     finally:
         scraper.cleanup()
 
-@cli.command()
-@click.option('--headless/--no-headless', default=True, help='Run browser in headless mode')
-def baseline(headless):
-    """Establish a baseline by scanning all locations without notifications"""
-    config_manager = ConfigManager()
-    
-    if not config_manager.config_exists():
-        console.print("[red]No configuration found![/red]")
-        console.print("Please run: [bold]python mapleads.py setup[/bold]")
-        sys.exit(1)
-    
-    config = config_manager.load_config()
-    console.print(f"\n[bold blue]Starting Baseline Mode[/bold blue]")
-    console.print(f"Category: {config['monitoring']['category']}")
-    console.print(f"Locations: {config['monitoring']['locations']}")
-    console.print("\n[yellow]⚠️  Baseline Mode: No notifications will be sent during this scan.[/yellow]")
-    console.print("[dim]All businesses found will be added to the database for future comparison.[/dim]\n")
-    
-    db = Database()
-    scraper = MapLeadsScraper(db, headless=headless)
-    
-    try:
-        # Start baseline scanning
-        scraper.baseline_scan(config['monitoring'])
-                
-    except KeyboardInterrupt:
-        console.print("\n[yellow]Baseline scan stopped by user.[/yellow]")
-    except Exception as e:
-        console.print(f"\n[red]Error: {e}[/red]")
-        sys.exit(1)
-    finally:
-        scraper.cleanup()
 
 @cli.command()
 def status():

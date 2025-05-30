@@ -27,8 +27,7 @@ class InteractiveSetup:
             "You'll be asked to:\n"
             "1. Choose business categories to monitor\n"
             "2. Select geographic areas\n"
-            "3. Configure notifications (optional)\n"
-            "4. Set monitoring schedule",
+            "3. Configure advanced settings",
             title="Setup Wizard"
         ))
         
@@ -38,10 +37,7 @@ class InteractiveSetup:
         # Step 2: Locations
         self._setup_locations()
         
-        # Step 3: Notifications
-        self._setup_notifications()
-        
-        # Step 4: Advanced settings
+        # Step 3: Advanced settings
         self._setup_advanced()
         
         # Show summary
@@ -66,21 +62,11 @@ class InteractiveSetup:
         console.print("\n[bold cyan]Step 1: Business Category[/bold cyan]")
         console.print("What type of business do you want to monitor?")
         
-        # Show popular categories
-        categories = {
-            "1": ["restaurant", "cafe", "bar", "bakery"],
-            "2": ["gym", "yoga studio", "fitness center"],
-            "3": ["plumber", "electrician", "hvac", "contractor"],
-            "4": ["dentist", "doctor", "chiropractor"],
-            "5": ["auto repair", "mechanic", "car dealer"],
-            "6": "Custom categories"
-        }
-        
         console.print("\nPopular categories:")
         popular_categories = [
-            "restaurant", "gym", "plumber", "dentist", "auto repair",
-            "yoga studio", "coffee shop", "electrician", "contractor",
-            "salon", "bakery", "lawyer", "accountant"
+            "plumber", "electrician", "hvac", "contractor", "roofer",
+            "landscaper", "painter", "flooring", "home cleaning",
+            "handyman", "garage door", "fence installer", "tree service"
         ]
         
         for i, cat in enumerate(popular_categories, 1):
@@ -109,7 +95,7 @@ class InteractiveSetup:
         scope = Prompt.ask(
             "Monitor scope",
             choices=["nationwide", "states", "cities"],
-            default="states"
+            default="nationwide"
         )
         
         if scope == "nationwide":
@@ -139,65 +125,17 @@ class InteractiveSetup:
         
         # Minimum population
         min_pop = IntPrompt.ask(
-            "\nMinimum city population (0 for all sizes)",
+            "\nMinimum zip code population (0 for all sizes)",
             default=50000
         )
         self.config['monitoring']['locations']['min_population'] = min_pop
     
     # Schedule setup removed - continuous processing mode enabled
     
-    def _setup_notifications(self):
-        """Setup notification preferences"""
-        console.print("\n[bold cyan]Step 3: Notifications (Optional)[/bold cyan]")
-        
-        if Confirm.ask("Do you want to set up notifications?", default=False):
-            # Email notifications
-            if Confirm.ask("\nSet up email notifications?", default=False):
-                self.config['notifications']['email']['enabled'] = True
-                self.config['notifications']['email']['email'] = Prompt.ask("Your email address")
-                
-                # For Gmail, provide app password instructions
-                if "gmail" in self.config['notifications']['email']['email']:
-                    console.print("[yellow]Note: For Gmail, use an App Password instead of your regular password[/yellow]")
-                    console.print("[dim]See: https://support.google.com/accounts/answer/185833[/dim]")
-                
-                self.config['notifications']['email']['password'] = Prompt.ask("Email password", password=True)
-                
-                recipients = Prompt.ask("Recipient emails (comma-separated)", default=self.config['notifications']['email']['email'])
-                self.config['notifications']['email']['recipients'] = [
-                    r.strip() for r in recipients.split(',') if r.strip()
-                ]
-            
-            # Webhook notifications
-            if Confirm.ask("\nSet up webhook notifications?", default=False):
-                self.config['notifications']['webhook']['enabled'] = True
-                self.config['notifications']['webhook']['url'] = Prompt.ask("Webhook URL")
-                
-                if Confirm.ask("Add authorization header?", default=False):
-                    auth = Prompt.ask("Authorization header value")
-                    self.config['notifications']['webhook']['headers'] = {
-                        "Authorization": auth
-                    }
-            
-            # Filters
-            console.print("\n[bold]Notification Filters[/bold]")
-            self.config['notifications']['filters']['only_with_website'] = Confirm.ask(
-                "Only notify for businesses with websites?", default=False
-            )
-            self.config['notifications']['filters']['only_with_reviews'] = Confirm.ask(
-                "Only notify for businesses with reviews?", default=False
-            )
-            self.config['notifications']['filters']['only_without_reviews'] = Confirm.ask(
-                "Only notify for businesses WITHOUT reviews (newer businesses)?", default=False
-            )
-            
-            if Confirm.ask("Set minimum rating filter?", default=False):
-                min_rating = Prompt.ask("Minimum rating (1-5)", default="4.0")
-                self.config['notifications']['filters']['min_rating'] = float(min_rating)
     
     def _setup_advanced(self):
         """Setup advanced settings"""
-        console.print("\n[bold cyan]Step 4: Advanced Settings[/bold cyan]")
+        console.print("\n[bold cyan]Step 3: Advanced Settings[/bold cyan]")
         
         # Batch size for continuous processing
         batch_size = IntPrompt.ask(
@@ -206,12 +144,6 @@ class InteractiveSetup:
         )
         self.config['monitoring']['batch_size'] = batch_size
         
-        # Delay between batches
-        delay = IntPrompt.ask(
-            "Delay between batches in seconds (to avoid rate limiting)",
-            default=60
-        )
-        self.config['monitoring']['batch_delay'] = delay
         
         # Number of browser instances
         browser_instances = IntPrompt.ask(
@@ -244,27 +176,7 @@ class InteractiveSetup:
         table.add_row("Min Population", str(locations['min_population']))
         table.add_row("Processing Mode", "Continuous")
         table.add_row("Batch Size", str(self.config['monitoring'].get('batch_size', 10)))
-        table.add_row("Batch Delay", f"{self.config['monitoring'].get('batch_delay', 60)} seconds")
         table.add_row("Browser Instances", str(self.config['monitoring'].get('browser_instances', 1)))
         
         console.print(table)
         
-        # Notification settings
-        if self.config['notifications']['email']['enabled'] or self.config['notifications']['webhook']['enabled']:
-            console.print("\n[bold]Notification Settings[/bold]")
-            
-            if self.config['notifications']['email']['enabled']:
-                console.print(f"  📧 Email: Enabled → {', '.join(self.config['notifications']['email']['recipients'])}")
-            
-            if self.config['notifications']['webhook']['enabled']:
-                console.print(f"  🔗 Webhook: Enabled → {self.config['notifications']['webhook']['url']}")
-            
-            filters = self.config['notifications']['filters']
-            if any([filters['only_with_website'], filters['only_with_reviews'], filters['min_rating']]):
-                console.print("\n  Filters:")
-                if filters['only_with_website']:
-                    console.print("    • Only with websites")
-                if filters['only_with_reviews']:
-                    console.print("    • Only with reviews")
-                if filters['min_rating']:
-                    console.print(f"    • Minimum rating: {filters['min_rating']}")
