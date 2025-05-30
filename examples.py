@@ -5,7 +5,6 @@ Example script showing how to use MapLeads programmatically
 
 from src.database import Database
 from src.scraper import MapLeadsScraper
-from src.notifier import NotificationManager
 
 def find_new_restaurants_in_texas():
     """Example: Find new restaurants in major Texas cities"""
@@ -77,9 +76,8 @@ def find_new_gyms_without_reviews():
     print("🏋️ Searching for brand new gyms...")
     new_businesses = scraper.scan(config['monitoring'])
     
-    # Apply filter
-    notifier = NotificationManager(notification_config)
-    filtered = notifier._apply_filters(new_businesses)
+    # Filter businesses without reviews (new businesses)
+    filtered = [b for b in new_businesses if b.get('reviews', '').lower() in ['no reviews', '']]
     
     if filtered:
         print(f"\n✅ Found {len(filtered)} brand new gyms with no reviews yet!")

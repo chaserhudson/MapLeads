@@ -260,9 +260,6 @@ class MapLeadsScraper:
                                 self.stats['new_businesses'] += 1
                             new_count += 1
                             
-                            # Notify immediately if configured
-                            if hasattr(self, 'notifier'):
-                                self.notifier.send_notifications([business])
                 
                 if new_count > 0:
                     print(f"  ✨ [Instance {instance_id}] Found {new_count} new businesses in {location['city']}, {location['state']}")

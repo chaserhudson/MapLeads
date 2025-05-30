@@ -15,7 +15,6 @@ from rich.progress import track
 from src.config_manager import ConfigManager
 from src.scraper_continuous import MapLeadsScraper
 from src.database import Database
-from src.notifier import NotificationManager
 from src.interactive_setup import InteractiveSetup
 
 console = Console()
@@ -152,15 +151,11 @@ def run(headless):
     
     db = Database()
     scraper = MapLeadsScraper(db, headless=headless)
-    notifier = NotificationManager(config)
     
     try:
         # Continuous monitoring mode
         console.print("\n[yellow]Starting continuous monitoring...[/yellow]")
         console.print("[dim]Press Ctrl+C to stop[/dim]\n")
-        
-        # Set up notifier on scraper for real-time notifications
-        scraper.notifier = notifier
         
         # Start continuous scanning
         scraper.continuous_scan(config['monitoring'])
