@@ -94,7 +94,7 @@ case "$1" in
         echo -e "${BLUE}🧪 Testing Web Interface...${NC}"
         echo -e "${YELLOW}💡 This will help debug web UI issues${NC}"
         echo ""
-        python simple_ui.py
+        python simple_test.py
         ;;
     "categories")
         echo -e "${BLUE}📋 Available Categories...${NC}"
