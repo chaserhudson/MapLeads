@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapLeads - Simple Test</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-primary mb-4">
+            <i class="bi bi-geo-alt-fill"></i> MapLeads - Simple Version
+        </h1>
+        
+        <div class="alert alert-success">
+            <h4>✅ Basic HTML and CSS are working!</h4>
+            <p>This confirms the server can serve files properly.</p>
+        </div>
+        
+        <div id="app">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Vue.js Test</h5>
+                </div>
+                <div class="card-body">
+                    <p>Status: {{ status }}</p>
+                    <button class="btn btn-primary" @click="testVue">Test Vue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        console.log('Script loading...');
+        
+        // Check if Vue loaded
+        if (typeof Vue === 'undefined') {
+            console.error('Vue.js failed to load from CDN');
+            document.getElementById('app').innerHTML = '<div class="alert alert-danger">❌ Vue.js failed to load from CDN</div>';
+        } else {
+            console.log('Vue.js loaded successfully');
+            
+            const { createApp } = Vue;
+            
+            try {
+                createApp({
+                    data() {
+                        return {
+                            status: 'Vue.js is working!'
+                        }
+                    },
+                    methods: {
+                        testVue() {
+                            this.status = 'Vue.js click handler works!';
+                            alert('Vue.js is fully functional!');
+                        }
+                    },
+                    mounted() {
+                        console.log('Vue app mounted successfully');
+                    }
+                }).mount('#app');
+            } catch (error) {
+                console.error('Vue app creation failed:', error);
+                document.getElementById('app').innerHTML = '<div class="alert alert-danger">❌ Vue app creation failed: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>

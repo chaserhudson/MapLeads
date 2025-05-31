@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapLeads Test</title>
+</head>
+<body>
+    <h1>🗺️ MapLeads Test Page</h1>
+    <p>If you can see this, HTML is working!</p>
+    
+    <div id="test-vue">
+        <h2>Vue Test: {{ message }}</h2>
+        <button @click="testClick">Click Me</button>
+    </div>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        console.log('JavaScript is working!');
+        console.log('Vue:', typeof Vue);
+        
+        if (typeof Vue !== 'undefined') {
+            const { createApp } = Vue;
+            createApp({
+                data() {
+                    return {
+                        message: 'Vue.js is working!'
+                    }
+                },
+                methods: {
+                    testClick() {
+                        alert('Vue click handler works!');
+                    }
+                }
+            }).mount('#test-vue');
+        } else {
+            document.getElementById('test-vue').innerHTML = '<h2 style="color: red;">Vue.js failed to load from CDN</h2>';
+        }
+    </script>
+</body>
+</html>
