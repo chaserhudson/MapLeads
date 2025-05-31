@@ -85,11 +85,15 @@ def get_businesses():
         offset = request.args.get('offset', 0, type=int)
         days = request.args.get('days', None, type=int)
         
+        print(f"📊 API request: limit={limit}, offset={offset}, days={days}")
+        
         if days:
             businesses = db.get_businesses_since_days(days)
+            print(f"📊 Found {len(businesses)} businesses in last {days} days")
         else:
             # Get recent businesses with pagination
             businesses = db.get_recent_businesses(limit, offset)
+            print(f"📊 Found {len(businesses)} recent businesses (limit={limit}, offset={offset})")
         
         # Convert datetime objects to strings for JSON serialization
         for business in businesses:
@@ -98,8 +102,12 @@ def get_businesses():
             if 'last_updated' in business and business['last_updated']:
                 business['last_updated'] = business['last_updated'].isoformat()
         
+        print(f"📊 Returning {len(businesses)} businesses to frontend")
         return jsonify({'success': True, 'businesses': businesses})
     except Exception as e:
+        print(f"❌ API error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/statistics', methods=['GET'])

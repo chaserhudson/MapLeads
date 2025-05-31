@@ -153,17 +153,30 @@ class Database:
                 ORDER BY first_seen DESC
             ''', (since_date,))
             
-            return [dict(row) for row in cursor.fetchall()]
+            rows = cursor.fetchall()
+            
+            # Convert to dict and parse dates
+            results = []
+            for row in rows:
+                business = dict(row)
+                # Parse timestamp strings to datetime objects
+                if business.get('first_seen'):
+                    business['first_seen'] = datetime.fromisoformat(business['first_seen'])
+                if business.get('last_seen'):
+                    business['last_seen'] = datetime.fromisoformat(business['last_seen'])
+                results.append(business)
+            
+            return results
     
-    def get_recent_businesses(self, limit: int = 10) -> List[Dict]:
+    def get_recent_businesses(self, limit: int = 10, offset: int = 0) -> List[Dict]:
         """Get the most recently discovered businesses"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.execute('''
                 SELECT * FROM businesses 
                 ORDER BY first_seen DESC 
-                LIMIT ?
-            ''', (limit,))
+                LIMIT ? OFFSET ?
+            ''', (limit, offset))
             
             rows = cursor.fetchall()
             
