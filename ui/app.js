@@ -3,7 +3,7 @@ const { createApp } = Vue
 createApp({
     data() {
         return {
-            currentView: 'dashboard',
+            currentView: 'welcome',  // Start with welcome for first-time users
             loading: false,
             config: {
                 monitoring: {
@@ -53,17 +53,25 @@ createApp({
     },
     
     async mounted() {
-        await this.loadConfig()
-        await this.loadStatistics()
-        await this.loadRecentBusinesses()
-        await this.loadCategories()
-        await this.checkScraperStatus()
-        
-        // Poll scraper status every 5 seconds
-        setInterval(this.checkScraperStatus, 5000)
-        
-        // Poll statistics every 30 seconds
-        setInterval(this.loadStatistics, 30000)
+        // Load everything with error handling for first-time users
+        try {
+            await this.loadConfig()
+            await this.loadStatistics()
+            await this.loadRecentBusinesses()
+            await this.loadCategories()
+            await this.checkScraperStatus()
+            
+            // Poll scraper status every 5 seconds
+            setInterval(this.checkScraperStatus, 5000)
+            
+            // Poll statistics every 30 seconds
+            setInterval(this.loadStatistics, 30000)
+        } catch (error) {
+            console.error('Error during app initialization:', error)
+            // Show setup view for first-time users
+            this.currentView = 'config'
+            this.showToast('Welcome! Please configure MapLeads to get started.', 'info')
+        }
     },
     
     methods: {
@@ -78,12 +86,22 @@ createApp({
             try {
                 const response = await fetch('/api/config')
                 const data = await response.json()
-                if (data.success) {
+                if (data.success && data.config && data.config.monitoring && data.config.monitoring.category) {
                     this.config = data.config
                     this.updateConfigForm()
+                    // User has config, go to dashboard
+                    this.currentView = 'dashboard'
+                } else {
+                    // First-time user - use default config and stay on welcome
+                    console.log('First-time user detected')
+                    this.updateConfigForm()
+                    this.currentView = 'welcome'
                 }
             } catch (error) {
-                this.showToast('Error loading configuration', 'error')
+                console.error('Error loading configuration:', error)
+                // First-time user - show welcome screen
+                this.updateConfigForm()
+                this.currentView = 'welcome'
             }
         },
         
@@ -145,6 +163,14 @@ createApp({
                 if (data.success) {
                     this.config = { monitoring: this.configForm.monitoring }
                     this.showToast('Configuration saved successfully!', 'success')
+                    
+                    // For first-time users, redirect to dashboard after saving
+                    if (this.currentView === 'config') {
+                        setTimeout(() => {
+                            this.currentView = 'dashboard'
+                            this.showToast('Setup complete! You can now start monitoring.', 'info')
+                        }, 1500)
+                    }
                 } else {
                     this.showToast(data.error || 'Failed to save configuration', 'error')
                 }
@@ -164,6 +190,13 @@ createApp({
                 }
             } catch (error) {
                 console.error('Error loading statistics:', error)
+                // Set default stats for first-time users
+                this.statistics = {
+                    total_businesses: 0,
+                    new_this_week: 0,
+                    new_this_month: 0,
+                    categories_count: 0
+                }
             }
         },
         
@@ -205,9 +238,22 @@ createApp({
                 const data = await response.json()
                 if (data.success) {
                     this.availableCategories = data.categories
+                } else {
+                    // Fallback categories for first-time users
+                    this.availableCategories = {
+                        "Home Services": ["plumber", "electrician", "hvac", "contractor"],
+                        "Health & Wellness": ["gym", "dentist", "doctor"],
+                        "Professional Services": ["lawyer", "accountant"]
+                    }
                 }
             } catch (error) {
                 console.error('Error loading categories:', error)
+                // Set default categories
+                this.availableCategories = {
+                    "Home Services": ["plumber", "electrician", "hvac", "contractor"],
+                    "Health & Wellness": ["gym", "dentist", "doctor"],
+                    "Professional Services": ["lawyer", "accountant"]
+                }
             }
         },
         
@@ -299,10 +345,11 @@ createApp({
             }
             this.toasts.push(toast)
             
-            // Auto remove after 5 seconds
+            // Auto remove after 5 seconds for success/error, 8 seconds for info
+            const delay = type === 'info' ? 8000 : 5000
             setTimeout(() => {
                 this.removeToast(toast.id)
-            }, 5000)
+            }, delay)
         },
         
         removeToast(id) {

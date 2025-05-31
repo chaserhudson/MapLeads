@@ -77,7 +77,10 @@
                         
                         <!-- Navigation -->
                         <nav class="nav flex-column">
-                            <a class="nav-link" :class="{active: currentView === 'dashboard'}" href="#" @click="setView('dashboard')">
+                            <a class="nav-link" :class="{active: currentView === 'welcome'}" href="#" @click="setView('welcome')" v-if="currentView === 'welcome'">
+                                <i class="bi bi-house"></i> Welcome
+                            </a>
+                            <a class="nav-link" :class="{active: currentView === 'dashboard'}" href="#" @click="setView('dashboard')" v-if="currentView !== 'welcome'">
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                             <a class="nav-link" :class="{active: currentView === 'businesses'}" href="#" @click="setView('businesses')">
@@ -122,6 +125,32 @@
                 <!-- Main Content -->
                 <div class="col-md-9 col-lg-10 main-content">
                     <div class="p-4">
+                        <!-- First-time User Welcome -->
+                        <div v-if="currentView === 'welcome'">
+                            <div class="text-center py-5">
+                                <h1 class="display-4 text-primary mb-4">
+                                    <i class="bi bi-geo-alt-fill"></i> Welcome to MapLeads!
+                                </h1>
+                                <p class="lead mb-4">Let's get you set up to start finding new business leads.</p>
+                                
+                                <div class="card mx-auto" style="max-width: 600px;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">🚀 Quick Setup</h5>
+                                        <p class="card-text">Configure MapLeads to monitor new businesses in your target market.</p>
+                                        <button class="btn btn-primary btn-lg" @click="setView('config')">
+                                            <i class="bi bi-gear"></i> Configure MapLeads
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <small class="text-muted">
+                                        Don't worry - you can change these settings anytime!
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Dashboard View -->
                         <div v-if="currentView === 'dashboard'">
                             <h2 class="mb-4">Dashboard</h2>
@@ -307,7 +336,17 @@
                         
                         <!-- Configuration View -->
                         <div v-if="currentView === 'config'">
-                            <h2 class="mb-4">Configuration</h2>
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2>Configuration</h2>
+                                <div v-if="!config.monitoring || !config.monitoring.category">
+                                    <span class="badge bg-info">First-time Setup</span>
+                                </div>
+                            </div>
+                            
+                            <div v-if="!config.monitoring || !config.monitoring.category" class="alert alert-info mb-4">
+                                <h5><i class="bi bi-info-circle"></i> Welcome to MapLeads!</h5>
+                                <p class="mb-0">Configure your preferences below to start monitoring new businesses in your target market.</p>
+                            </div>
                             
                             <div class="card">
                                 <div class="card-body">
@@ -436,8 +475,8 @@
         <div class="toast-container position-fixed bottom-0 end-0 p-3">
             <div v-for="toast in toasts" :key="toast.id" class="toast show" role="alert">
                 <div class="toast-header">
-                    <i class="bi" :class="toast.type === 'success' ? 'bi-check-circle text-success' : 'bi-exclamation-triangle text-danger'"></i>
-                    <strong class="me-auto ms-1">{{ toast.type === 'success' ? 'Success' : 'Error' }}</strong>
+                    <i class="bi" :class="toast.type === 'success' ? 'bi-check-circle text-success' : toast.type === 'info' ? 'bi-info-circle text-info' : 'bi-exclamation-triangle text-danger'"></i>
+                    <strong class="me-auto ms-1">{{ toast.type === 'success' ? 'Success' : toast.type === 'info' ? 'Welcome' : 'Error' }}</strong>
                     <button type="button" class="btn-close" @click="removeToast(toast.id)"></button>
                 </div>
                 <div class="toast-body">
