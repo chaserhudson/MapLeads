@@ -31,7 +31,7 @@ Automatically find new businesses as they appear on Google Maps. Perfect for con
    ```bash
    ./run.sh ui
    ```
-   This opens a user-friendly web interface in your browser where you can:
+   This opens a user-friendly web interface at http://localhost:8080 where you can:
    - Configure settings with a simple form
    - View your leads in a sortable table
    - Start/stop monitoring with buttons

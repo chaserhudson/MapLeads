@@ -19,7 +19,7 @@ from src.web_server import start_web_server
 def open_browser():
     """Open browser after a short delay"""
     time.sleep(1.5)  # Give server time to start
-    webbrowser.open('http://localhost:5000')
+    webbrowser.open('http://localhost:8080')
 
 def main():
     print("🗺️ MapLeads Web UI")
@@ -55,8 +55,8 @@ def main():
     
     # Start web server (this blocks)
     try:
-        print("🌐 Server will be available at: http://localhost:5000")
-        start_web_server(host='localhost', port=5000, debug=False)
+        print("🌐 Server will be available at: http://localhost:8080")
+        start_web_server(host='localhost', port=8080, debug=False)
     except KeyboardInterrupt:
         print("\n\n👋 MapLeads Web UI stopped.")
     except Exception as e:

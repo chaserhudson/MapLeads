@@ -239,7 +239,7 @@ def get_categories():
     
     return jsonify({'success': True, 'categories': categories})
 
-def start_web_server(host='localhost', port=5000, debug=False):
+def start_web_server(host='localhost', port=8080, debug=False):
     """Start the web server"""
     print(f"🌐 Starting MapLeads Web UI at http://{host}:{port}")
     app.run(host=host, port=port, debug=debug, threaded=True)
