@@ -27,14 +27,20 @@ Automatically find new businesses as they appear on Google Maps. Perfect for con
    ./install.sh
    ```
 
-3. **Set Up Your Preferences**:
+3. **Launch Web Interface** (Easiest):
    ```bash
-   ./run.sh setup
+   ./run.sh ui
    ```
+   This opens a user-friendly web interface in your browser where you can:
+   - Configure settings with a simple form
+   - View your leads in a sortable table
+   - Start/stop monitoring with buttons
+   - Export data with one click
 
-4. **Start Finding Leads**:
+   **OR use command line**:
    ```bash
-   ./run.sh
+   ./run.sh setup  # Set up preferences
+   ./run.sh        # Start finding leads
    ```
 
 ### ⚠️ **Important First-Time Setup Notes**
@@ -187,6 +193,10 @@ MapLeads excels at identifying newly established businesses by:
 
 ## 🎮 Easy Commands (Non-Technical)
 
+### Web Interface (Recommended for Beginners)
+- `./run.sh ui` - **Launch web interface** (easiest way to use MapLeads!)
+
+### Command Line Options  
 - `./run.sh setup` - Set up MapLeads for the first time
 - `./run.sh` - Start finding new businesses
 - `./run.sh status` - See what you've found so far
@@ -266,6 +276,68 @@ Each business record includes:
 - First seen date
 - Last updated date
 - Geographic coordinates
+
+## 🌐 Web Interface Guide
+
+### 🚀 Getting Started with the Web UI
+
+1. **Launch the Interface**:
+   ```bash
+   ./run.sh ui
+   ```
+   This will:
+   - Start a local web server
+   - Automatically open your browser to http://localhost:5000
+   - Show the MapLeads dashboard
+
+2. **First-Time Setup**:
+   - Click "Configuration" in the sidebar
+   - Choose your business category (e.g., "plumber", "electrician")
+   - Select monitoring scope (Nationwide, specific states, or cities)
+   - Set minimum population and browser instances
+   - Click "Save Configuration"
+
+3. **Start Monitoring**:
+   - Go back to "Dashboard"
+   - Click the green "Start" button in the sidebar
+   - Watch the real-time progress and statistics
+
+### 📋 Web Interface Features
+
+**Dashboard**:
+- Overview statistics (total businesses, new this week/month)
+- Current configuration summary
+- Real-time monitoring status
+- Recent business discoveries
+
+**Businesses View**:
+- Sortable table of all discovered businesses
+- Filter by date range (last 7/30/90 days, all time)
+- Shows name, phone, category, location, reviews, and discovery date
+
+**Configuration**:
+- Easy form-based setup (no JSON editing needed)
+- Business category dropdown with popular options
+- Location scope selection with helpful guidance
+- Performance settings (browser instances, batch size)
+
+**Export Data**:
+- Choose format: CSV, JSON, or Excel
+- Select time period for export
+- One-click download of your leads
+
+### 💻 Web UI vs Command Line
+
+| Feature | Web UI | Command Line |
+|---------|--------|--------------|
+| **Ease of Use** | 🟢 Very Easy | 🟡 Technical |
+| **Setup** | 🟢 Point & Click | 🟡 Text Commands |
+| **View Data** | 🟢 Visual Table | 🟡 Text Output |
+| **Real-time Stats** | 🟢 Live Dashboard | 🟡 Manual Check |
+| **Export** | 🟢 One Click | 🟡 Commands |
+| **Start/Stop** | 🟢 Buttons | 🟡 Terminal Control |
+
+💡 **Recommendation**: Use the Web UI if you're new to MapLeads or prefer visual interfaces!
 
 ## 🆘 Common Issues & Solutions
 

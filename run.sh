@@ -28,6 +28,7 @@ show_help() {
     echo ""
     echo -e "${GREEN}Main Commands:${NC}"
     echo "  setup          - Set up MapLeads for the first time"
+    echo "  ui             - Launch web interface (easiest for beginners)"
     echo "  (no command)   - Start monitoring for new businesses"
     echo "  stop           - Stop monitoring (Ctrl+C also works)"
     echo ""
@@ -43,6 +44,7 @@ show_help() {
     echo ""
     echo -e "${GREEN}Examples:${NC}"
     echo "  ./run.sh setup                    # First-time setup"
+    echo "  ./run.sh ui                       # Launch web interface"
     echo "  ./run.sh                          # Start monitoring"
     echo "  ./run.sh category plumber         # Monitor plumbers"
     echo "  ./run.sh instances 3              # Use 3 parallel browsers"
@@ -64,6 +66,13 @@ case "$1" in
     "setup")
         echo -e "${BLUE}🔧 Running MapLeads Setup...${NC}"
         python mapleads.py setup
+        ;;
+    "ui")
+        echo -e "${BLUE}🌐 Launching MapLeads Web Interface...${NC}"
+        echo -e "${YELLOW}💡 The web interface will open in your browser${NC}"
+        echo -e "${YELLOW}💡 Use Ctrl+C to stop the web server${NC}"
+        echo ""
+        python launch_ui.py
         ;;
     "status")
         check_setup

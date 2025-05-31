@@ -32,3 +32,7 @@ pydantic>=2.0.0
 
 # Export formats
 openpyxl>=3.1.0  # For Excel export
+
+# Web UI
+flask>=2.3.0
+flask-cors>=4.0.0

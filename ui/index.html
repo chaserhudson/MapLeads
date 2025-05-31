@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapLeads - Business Lead Generator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        .main-content {
+            min-height: 100vh;
+        }
+        .status-badge {
+            font-size: 0.875rem;
+        }
+        .business-card {
+            transition: all 0.2s;
+        }
+        .business-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #0d6efd;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stats-card-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .stats-card-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .stats-card-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3 col-lg-2 sidebar p-0">
+                    <div class="p-3">
+                        <h4 class="text-primary mb-4">
+                            <i class="bi bi-geo-alt-fill"></i> MapLeads
+                        </h4>
+                        
+                        <!-- Navigation -->
+                        <nav class="nav flex-column">
+                            <a class="nav-link" :class="{active: currentView === 'dashboard'}" href="#" @click="setView('dashboard')">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                            <a class="nav-link" :class="{active: currentView === 'businesses'}" href="#" @click="setView('businesses')">
+                                <i class="bi bi-building"></i> Businesses
+                            </a>
+                            <a class="nav-link" :class="{active: currentView === 'config'}" href="#" @click="setView('config')">
+                                <i class="bi bi-gear"></i> Configuration
+                            </a>
+                            <a class="nav-link" :class="{active: currentView === 'export'}" href="#" @click="setView('export')">
+                                <i class="bi bi-download"></i> Export Data
+                            </a>
+                        </nav>
+                        
+                        <!-- Scraper Controls -->
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h6 class="mb-3">Monitor Control</h6>
+                            <div class="d-flex flex-column gap-2">
+                                <button 
+                                    class="btn btn-success btn-sm" 
+                                    @click="startScraper" 
+                                    :disabled="scraperStatus.running || loading"
+                                >
+                                    <i class="bi bi-play-fill"></i> Start
+                                </button>
+                                <button 
+                                    class="btn btn-danger btn-sm" 
+                                    @click="stopScraper" 
+                                    :disabled="!scraperStatus.running || loading"
+                                >
+                                    <i class="bi bi-stop-fill"></i> Stop
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge status-badge" :class="scraperStatus.running ? 'bg-success' : 'bg-secondary'">
+                                    {{ scraperStatus.running ? 'Running' : 'Stopped' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="col-md-9 col-lg-10 main-content">
+                    <div class="p-4">
+                        <!-- Dashboard View -->
+                        <div v-if="currentView === 'dashboard'">
+                            <h2 class="mb-4">Dashboard</h2>
+                            
+                            <!-- Statistics Cards -->
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stats-card h-100 text-center">
+                                        <div class="card-body">
+                                            <i class="bi bi-building display-4"></i>
+                                            <h3 class="mt-2">{{ statistics.total_businesses || 0 }}</h3>
+                                            <p class="mb-0">Total Businesses</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stats-card-2 h-100 text-center">
+                                        <div class="card-body">
+                                            <i class="bi bi-star-fill display-4"></i>
+                                            <h3 class="mt-2">{{ statistics.new_this_week || 0 }}</h3>
+                                            <p class="mb-0">New This Week</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stats-card-3 h-100 text-center">
+                                        <div class="card-body">
+                                            <i class="bi bi-calendar-month display-4"></i>
+                                            <h3 class="mt-2">{{ statistics.new_this_month || 0 }}</h3>
+                                            <p class="mb-0">New This Month</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stats-card-4 h-100 text-center">
+                                        <div class="card-body">
+                                            <i class="bi bi-tags-fill display-4"></i>
+                                            <h3 class="mt-2">{{ statistics.categories_count || 0 }}</h3>
+                                            <p class="mb-0">Categories</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Current Configuration -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="bi bi-gear"></i> Current Configuration</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div v-if="config.monitoring">
+                                                <p><strong>Category:</strong> {{ config.monitoring.category }}</p>
+                                                <p><strong>Scope:</strong> 
+                                                    <span v-if="!config.monitoring.locations.states && !config.monitoring.locations.cities">Nationwide</span>
+                                                    <span v-else-if="config.monitoring.locations.states">States: {{ config.monitoring.locations.states.join(', ') }}</span>
+                                                    <span v-else>Cities: {{ config.monitoring.locations.cities.join(', ') }}</span>
+                                                </p>
+                                                <p><strong>Min Population:</strong> {{ config.monitoring.locations.min_population.toLocaleString() }}</p>
+                                                <p><strong>Browser Instances:</strong> {{ config.monitoring.browser_instances }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="bi bi-activity"></i> Monitor Status</h5>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <div class="mb-2">
+                                                <span class="badge fs-6" :class="scraperStatus.running ? 'bg-success' : 'bg-secondary'">
+                                                    {{ scraperStatus.running ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </div>
+                                            <div v-if="scraperStatus.stats && scraperStatus.running" class="small text-muted">
+                                                <p class="mb-1">New businesses: {{ scraperStatus.stats.new_businesses || 0 }}</p>
+                                                <p class="mb-0">Locations processed: {{ scraperStatus.stats.locations_processed || 0 }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Businesses -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Discoveries</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="recentBusinesses.length === 0" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox display-1"></i>
+                                        <p class="mt-2">No businesses found yet. Start monitoring to begin discovering leads!</p>
+                                    </div>
+                                    <div v-else class="row">
+                                        <div v-for="business in recentBusinesses.slice(0, 6)" :key="business.id" class="col-md-6 col-lg-4 mb-3">
+                                            <div class="card business-card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">{{ business.name }}</h6>
+                                                    <p class="card-text small text-muted">
+                                                        <i class="bi bi-telephone"></i> {{ business.phone }}<br>
+                                                        <i class="bi bi-geo-alt"></i> {{ business.city }}, {{ business.state }}<br>
+                                                        <i class="bi bi-tag"></i> {{ business.category }}
+                                                    </p>
+                                                    <small class="text-muted">{{ formatDate(business.first_seen) }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Businesses View -->
+                        <div v-if="currentView === 'businesses'">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2>All Businesses</h2>
+                                <button class="btn btn-outline-primary" @click="loadBusinesses">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                            
+                            <!-- Search and Filters -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Days to show:</label>
+                                            <select class="form-select" v-model="businessDays" @change="loadBusinesses">
+                                                <option value="7">Last 7 days</option>
+                                                <option value="30">Last 30 days</option>
+                                                <option value="90">Last 90 days</option>
+                                                <option value="">All time</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Show per page:</label>
+                                            <select class="form-select" v-model="businessLimit" @change="loadBusinesses">
+                                                <option value="50">50</option>
+                                                <option value="100">100</option>
+                                                <option value="200">200</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Businesses Table -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <div v-if="businesses.length === 0" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox display-1"></i>
+                                        <p class="mt-2">No businesses found for the selected criteria.</p>
+                                    </div>
+                                    <div v-else class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Phone</th>
+                                                    <th>Category</th>
+                                                    <th>Location</th>
+                                                    <th>Reviews</th>
+                                                    <th>First Seen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="business in businesses" :key="business.id">
+                                                    <td>{{ business.name }}</td>
+                                                    <td>{{ business.phone }}</td>
+                                                    <td>{{ business.category }}</td>
+                                                    <td>{{ business.city }}, {{ business.state }}</td>
+                                                    <td>{{ business.reviews || 'No reviews' }}</td>
+                                                    <td>{{ formatDate(business.first_seen) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Configuration View -->
+                        <div v-if="currentView === 'config'">
+                            <h2 class="mb-4">Configuration</h2>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <form @submit.prevent="saveConfiguration">
+                                        <!-- Category -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Business Category</label>
+                                            <select class="form-select" v-model="configForm.monitoring.category" required>
+                                                <optgroup v-for="(cats, group) in availableCategories" :key="group" :label="group">
+                                                    <option v-for="cat in cats" :key="cat" :value="cat">{{ cat }}</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Location Scope -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Monitor Scope</label>
+                                            <select class="form-select" v-model="configForm.scope" @change="onScopeChange">
+                                                <option value="nationwide">Nationwide</option>
+                                                <option value="states">Specific States</option>
+                                                <option value="cities">Specific Cities</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- States Input -->
+                                        <div v-if="configForm.scope === 'states'" class="mb-3">
+                                            <label class="form-label">State Codes (comma-separated)</label>
+                                            <input type="text" class="form-control" v-model="configForm.statesInput" 
+                                                   placeholder="e.g., CA,TX,FL">
+                                            <div class="form-text">Enter 2-letter state codes separated by commas</div>
+                                        </div>
+                                        
+                                        <!-- Cities Input -->
+                                        <div v-if="configForm.scope === 'cities'" class="mb-3">
+                                            <label class="form-label">Cities (comma-separated)</label>
+                                            <input type="text" class="form-control" v-model="configForm.citiesInput" 
+                                                   placeholder="e.g., Los Angeles,Houston,Miami">
+                                            <div class="form-text">Enter city names separated by commas</div>
+                                        </div>
+                                        
+                                        <!-- Min Population -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Minimum Zip Code Population</label>
+                                            <input type="number" class="form-control" v-model.number="configForm.monitoring.locations.min_population" min="0">
+                                            <div class="form-text">Set to 0 for all sizes</div>
+                                        </div>
+                                        
+                                        <!-- Browser Instances -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Browser Instances (1-5)</label>
+                                            <select class="form-select" v-model.number="configForm.monitoring.browser_instances">
+                                                <option value="1">1 (Safest, Slowest)</option>
+                                                <option value="2">2 (Balanced)</option>
+                                                <option value="3">3 (Faster)</option>
+                                                <option value="4">4 (Much Faster)</option>
+                                                <option value="5">5 (Fastest, Highest Resources)</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Batch Size -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Batch Size</label>
+                                            <input type="number" class="form-control" v-model.number="configForm.monitoring.batch_size" min="1" max="50">
+                                            <div class="form-text">Number of locations to process in each batch</div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary" :disabled="loading">
+                                            <span v-if="loading" class="loading-spinner me-2"></span>
+                                            Save Configuration
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Export View -->
+                        <div v-if="currentView === 'export'">
+                            <h2 class="mb-4">Export Data</h2>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <form @submit.prevent="exportData">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Export Format</label>
+                                                    <select class="form-select" v-model="exportForm.format">
+                                                        <option value="csv">CSV (Excel Compatible)</option>
+                                                        <option value="json">JSON</option>
+                                                        <option value="xlsx">Excel (.xlsx)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Time Period</label>
+                                                    <select class="form-select" v-model.number="exportForm.days">
+                                                        <option value="7">Last 7 days</option>
+                                                        <option value="30">Last 30 days</option>
+                                                        <option value="90">Last 90 days</option>
+                                                        <option value="365">Last year</option>
+                                                        <option value="9999">All time</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-success" :disabled="loading">
+                                            <span v-if="loading" class="loading-spinner me-2"></span>
+                                            <i class="bi bi-download"></i> Export Data
+                                        </button>
+                                    </form>
+                                    
+                                    <div v-if="exportResult" class="alert alert-success mt-3">
+                                        <i class="bi bi-check-circle"></i> {{ exportResult }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast for notifications -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div v-for="toast in toasts" :key="toast.id" class="toast show" role="alert">
+                <div class="toast-header">
+                    <i class="bi" :class="toast.type === 'success' ? 'bi-check-circle text-success' : 'bi-exclamation-triangle text-danger'"></i>
+                    <strong class="me-auto ms-1">{{ toast.type === 'success' ? 'Success' : 'Error' }}</strong>
+                    <button type="button" class="btn-close" @click="removeToast(toast.id)"></button>
+                </div>
+                <div class="toast-body">
+                    {{ toast.message }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
