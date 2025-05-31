@@ -6,15 +6,28 @@ Provides REST API endpoints for the Vue.js frontend
 import json
 import threading
 import time
+import os
 from pathlib import Path
-from flask import Flask, jsonify, request, send_from_directory
-from flask_cors import CORS
+
+try:
+    from flask import Flask, jsonify, request, send_from_directory
+    from flask_cors import CORS
+except ImportError as e:
+    print(f"❌ Missing dependency: {e}")
+    print("Please install Flask dependencies:")
+    print("pip install flask flask-cors")
+    exit(1)
 
 from .config_manager import ConfigManager
 from .database import Database
 from .scraper_continuous import MapLeadsScraper
 
-app = Flask(__name__, static_folder='../ui', static_url_path='')
+# Get absolute path to UI directory
+CURRENT_DIR = Path(__file__).parent
+PROJECT_ROOT = CURRENT_DIR.parent
+UI_DIR = PROJECT_ROOT / 'ui'
+
+app = Flask(__name__, static_folder=str(UI_DIR), static_url_path='')
 CORS(app)
 
 # Global variables for scraper control
@@ -25,7 +38,15 @@ scraper_running = False
 @app.route('/')
 def index():
     """Serve the main UI"""
-    return send_from_directory('../ui', 'index.html')
+    try:
+        # Check if index.html exists
+        index_path = UI_DIR / 'index.html'
+        if not index_path.exists():
+            return f"Error: index.html not found at {index_path}", 404
+        
+        return send_from_directory(str(UI_DIR), 'index.html')
+    except Exception as e:
+        return f"Error serving UI: {e}", 500
 
 @app.route('/api/config', methods=['GET'])
 def get_config():

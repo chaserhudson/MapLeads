@@ -36,6 +36,7 @@ show_help() {
     echo "  status         - View statistics and recent discoveries"
     echo "  export         - Export your data to CSV file"
     echo "  test           - Run a quick test to verify everything works"
+    echo "  test-ui        - Test web interface (debug mode)"
     echo "  categories     - See available business categories"
     echo ""
     echo -e "${GREEN}Configuration:${NC}"
@@ -88,6 +89,12 @@ case "$1" in
         check_setup
         echo -e "${BLUE}🧪 Running Test Scan...${NC}"
         python mapleads.py test
+        ;;
+    "test-ui")
+        echo -e "${BLUE}🧪 Testing Web Interface...${NC}"
+        echo -e "${YELLOW}💡 This will help debug web UI issues${NC}"
+        echo ""
+        python simple_ui.py
         ;;
     "categories")
         echo -e "${BLUE}📋 Available Categories...${NC}"
