@@ -49,6 +49,9 @@ def index():
         <p><a href="/ui-test">Test UI File Serving</a></p>
         <p><a href="/simple">Test Simple HTML</a></p>
         <p><a href="/test">Test Vue.js</a></p>
+        <p><a href="/minimal">Test Minimal Vue</a></p>
+        <p><a href="/debug">Debug Page (shows console output)</a></p>
+        <p><a href="/api/config">Test API Config</a></p>
     </body>
     </html>
     """
@@ -91,6 +94,27 @@ def vue_test():
         return send_from_directory(str(UI_DIR), 'test.html')
     except Exception as e:
         return f"❌ Error serving test.html: {e}"
+
+@app.route('/minimal')
+def minimal_test():
+    """Test minimal Vue.js page"""
+    try:
+        return send_from_directory(str(UI_DIR), 'minimal.html')
+    except Exception as e:
+        return f"❌ Error serving minimal.html: {e}"
+
+@app.route('/debug')
+def debug_page():
+    """Debug page with console capture"""
+    try:
+        return send_from_directory(str(UI_DIR), 'debug.html')
+    except Exception as e:
+        return f"❌ Error serving debug.html: {e}"
+
+@app.route('/api/config')
+def api_config_test():
+    """Test API config endpoint"""
+    return {"success": True, "message": "API is working", "config": None}
 
 if __name__ == '__main__':
     print("\n🧪 Starting Debug Server")

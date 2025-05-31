@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapLeads - Debug Mode</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-primary mb-4">
+            <i class="bi bi-geo-alt-fill"></i> MapLeads Debug
+        </h1>
+        
+        <div class="alert alert-info">
+            <h5>🔍 Debugging the blank page issue</h5>
+            <p>This page will help identify what's causing the blank screen.</p>
+        </div>
+        
+        <div id="debug-info" class="mb-4"></div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Test Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="test-results">
+                    <p>Running tests...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h5>Console Output:</h5>
+            <div id="console-output" class="bg-light p-3 rounded" style="font-family: monospace; max-height: 300px; overflow-y: auto;">
+                <div>Console messages will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Capture console output
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(type, message) {
+            const div = document.createElement('div');
+            div.className = type === 'error' ? 'text-danger' : type === 'warn' ? 'text-warning' : 'text-success';
+            div.textContent = `[${type.toUpperCase()}] ${message}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole('log', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('error', args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('warn', args.join(' '));
+        };
+        
+        // Start debugging
+        console.log('Debug page loaded');
+        
+        // Test 1: Check if CDNs work
+        function testCDNs() {
+            console.log('Testing CDN resources...');
+            
+            const tests = [];
+            
+            // Test Bootstrap CSS
+            const bootLink = document.querySelector('link[href*="bootstrap"]');
+            if (bootLink) {
+                tests.push('✅ Bootstrap CSS link found');
+            } else {
+                tests.push('❌ Bootstrap CSS link not found');
+            }
+            
+            // Test Bootstrap Icons
+            const iconLink = document.querySelector('link[href*="bootstrap-icons"]');
+            if (iconLink) {
+                tests.push('✅ Bootstrap Icons link found');
+            } else {
+                tests.push('❌ Bootstrap Icons link not found');
+            }
+            
+            return tests;
+        }
+        
+        // Test 2: Load Vue.js
+        function testVue() {
+            console.log('Testing Vue.js...');
+            
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/vue@3/dist/vue.global.js';
+                script.onload = function() {
+                    console.log('Vue.js script loaded');
+                    
+                    if (typeof Vue !== 'undefined') {
+                        console.log('Vue.js is available, version:', Vue.version);
+                        resolve(['✅ Vue.js loaded successfully', '✅ Vue version: ' + Vue.version]);
+                    } else {
+                        console.error('Vue.js loaded but not available');
+                        resolve(['❌ Vue.js loaded but not available']);
+                    }
+                };
+                script.onerror = function() {
+                    console.error('Failed to load Vue.js');
+                    resolve(['❌ Failed to load Vue.js from CDN']);
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Test 3: Test API
+        function testAPI() {
+            console.log('Testing API...');
+            
+            return fetch('/api/config')
+                .then(response => {
+                    console.log('API response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API response data:', data);
+                    return ['✅ API is responding', '✅ API data: ' + JSON.stringify(data)];
+                })
+                .catch(error => {
+                    console.error('API test failed:', error);
+                    return ['❌ API test failed: ' + error.message];
+                });
+        }
+        
+        // Run all tests
+        async function runTests() {
+            const results = [];
+            
+            // Test CDNs
+            results.push(...testCDNs());
+            
+            // Test Vue.js
+            const vueResults = await testVue();
+            results.push(...vueResults);
+            
+            // Test API
+            const apiResults = await testAPI();
+            results.push(...apiResults);
+            
+            // Display results
+            const testResultsDiv = document.getElementById('test-results');
+            testResultsDiv.innerHTML = results.map(result => `<div>${result}</div>`).join('');
+            
+            console.log('All tests completed');
+        }
+        
+        // Start tests
+        runTests();
+    </script>
+</body>
+</html>
