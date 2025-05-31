@@ -37,6 +37,20 @@ Automatically find new businesses as they appear on Google Maps. Perfect for con
    ./run.sh
    ```
 
+### ⚠️ **Important First-Time Setup Notes**
+
+**Your first run establishes a baseline** - this means MapLeads will scan your chosen areas and save all existing businesses to its database. **You won't see "new" businesses on the first run** because everything is new to the empty database.
+
+**On your second and subsequent runs**, MapLeads will compare against this baseline and only show you truly NEW businesses that weren't there before.
+
+**⏱️ Expected Initial Scan Times:**
+- **Single State (e.g., California)**: 30-60 minutes
+- **Multiple States (e.g., CA, TX, FL)**: 2-4 hours  
+- **Nationwide + High Population (50k+)**: 4-8 hours
+- **Nationwide + No Population Limit**: 8-24 hours (40,000+ zip codes!)
+
+💡 **Tip**: Start with a single state and higher population limit (100k+) for your first test run.
+
 ### For Technical Users
 
 ```bash
@@ -66,6 +80,18 @@ python mapleads.py run
 - **Marketing Agencies**: Track new businesses that need marketing services
 - **Local Services**: Monitor competitors or potential partners in your area
 
+## 👀 Viewing Your Data While Monitoring
+
+**While MapLeads is running**, you can view your data in a second terminal window:
+
+1. **Open a new Terminal/Command Prompt window**
+2. **Navigate to your MapLeads folder**: `cd Desktop/MapLeads-main`
+3. **Check your statistics**: `./run.sh status`
+4. **Export your data**: `./run.sh export`
+5. **View recent discoveries**: Look for the CSV file in your folder
+
+**Don't stop the monitoring window** - let it keep running to find new businesses!
+
 ## 📝 Category Notes
 
 **Best Performance**: Home services (plumber, electrician, HVAC, contractor, etc.) work exceptionally well as phone numbers are readily visible in search results.
@@ -90,6 +116,25 @@ MapLeads uses a simple JSON configuration that you can set up interactively:
   }
 }
 ```
+
+## 🔄 Understanding How MapLeads Works
+
+### First Run (Baseline Establishment)
+- **What happens**: MapLeads scans all locations and saves every business it finds
+- **What you'll see**: Hundreds or thousands of businesses added to your database
+- **Important**: These are NOT "new" businesses - they're just new to your database
+- **Time required**: See timing estimates above
+
+### Second Run Onwards (True New Business Detection)
+- **What happens**: MapLeads compares current scan against your baseline
+- **What you'll see**: Only businesses that weren't there before (truly NEW businesses)
+- **Typical results**: 0-50 new businesses per run (depending on your area/category)
+- **Time required**: Much faster since it's just checking for changes
+
+### What Makes a Business "New"?
+- Business just created their Google Maps listing
+- Business just started appearing in search results for your category
+- Business recently opened and is now discoverable online
 
 ## 🎯 Finding New Businesses
 
@@ -150,6 +195,29 @@ MapLeads excels at identifying newly established businesses by:
 - `./run.sh category plumber` - Change what type of business to find
 - `./run.sh instances 3` - Use 3 browsers for faster results
 - `./run.sh categories` - See all available business types
+- `./run.sh help` - Show all available commands
+
+## 📋 Best Practices for New Users
+
+### Start Small
+1. **Choose 1-2 states** instead of nationwide for your first run
+2. **Set minimum population to 100,000+** to reduce scan time
+3. **Use 2-3 browser instances** for faster results (if you have 4GB+ RAM)
+
+### Monitor Progress
+- Watch the terminal for progress updates
+- Each location shows how many businesses were found
+- New businesses are marked with ✨ when discovered
+
+### Check Your Results
+- Run `./run.sh status` to see total businesses found
+- Run `./run.sh export` to save your leads to CSV
+- Open the CSV file in Excel or Google Sheets to view/sort your leads
+
+### Optimize Performance
+- **Faster**: Increase browser instances (`./run.sh instances 3`)
+- **Slower but safer**: Use 1 browser instance if you have memory issues
+- **Target better**: Increase minimum population or focus on specific states
 
 ## 🎮 Technical Commands
 
